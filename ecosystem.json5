@@ -1,0 +1,60 @@
+{
+  /**
+   * This is a sample configuration file for PM2
+   */
+
+  /**
+   * Here we declare the apps that must be managed by PM2
+   * All options are listed here:
+   * https://github.com/Unitech/PM2/blob/master/ADVANCED_README.md#json-app-declaration
+   *
+   */
+  apps : [
+
+    // First application
+    {
+      name      : "Prerender",
+      script    : "wrapper.js",
+      instances  : 1,
+      env: {
+        COMMON_VARIABLE: "true"
+      },
+      env_production : {
+        NODE_ENV: "production",
+        PORT: 4000,
+        PRERENDER_SERVICE_URL: "http://localhost:4000"
+      },
+      env_staging: {
+        NODE_ENV: "staging",
+        PORT: 4000,
+        PRERENDER_SERVICE_URL: "http://localhost:4000"
+      }
+    }
+
+  ],
+
+
+  /**
+   * PM2 help you to deploy apps over your servers
+   * For more help go to :
+   * https://github.com/Unitech/PM2/blob/master/ADVANCED_README.md#deployment-pm2--090
+   */
+  deploy : {
+    production : {
+      user : "node",
+      host : "localhost",
+      ref  : "origin/pm2",
+      repo : "https://github.com/phra/slimerjs-prerender.git",
+      path : "/home/node/deploy/production/prerender",
+      "post-deploy" : "npm install --production && pm2 startOrGracefulReload ecosystem.json5 --env production"
+    },
+    staging : {
+      user : "node",
+      host : "localhost",
+      ref  : "origin/pm2",
+      repo : "https://github.com/phra/slimerjs-prerender.git",
+      path : "/home/node/deploy/staging/prerender",
+      "post-deploy" : "npm install && pm2 startOrGracefulReload ecosystem.json5 --env staging",
+    }
+  }
+}
