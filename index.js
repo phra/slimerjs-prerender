@@ -6,20 +6,19 @@ var stripScriptsRegex = /<script(?:.*?)>(?:[\S\s]*?)<\/script>/gi;
 var stripScripts = process.env.strip || true;
 var port = process.env.port || 4000;
 var binPath = path.resolve(__dirname, 'node_modules', 'slimerjs', 'lib', 'slimer', 'slimerjs');
-var args = ['script.js', undefined, process.env.wait || 4 * 1000];
+var args = ['script.js', undefined, process.env.wait || 4 * 1000, process.env.kill || 10000];
 var app = express();
 
 
-app.get('/prerender', function (req, res) {
-    var url = "";
+function fetch(url, req, res) {
     var html = "";
     var cp = undefined;
 
-    args[1] = req.query.url;
+    args[1] = url;
     cp = spawn(binPath, args);
 
     cp.on('error', function(err) {
-        res.status(500).send(err.stack);
+        res.sendStatus(500);
     });
 
     cp.stdout.on('data', function(data) {
@@ -29,6 +28,11 @@ app.get('/prerender', function (req, res) {
     cp.on('exit', function(err) {
         if (stripScripts && html) {
             var matches = html.match(stripScriptsRegex);
+
+            if (!matches || html.startsWith('ERROR')) {
+                return res.sendStatus(500);
+            }
+
             for (var i = 0; i < matches.length; i++) {
                 if (matches[i].indexOf('application/ld+json') === -1) {
                     html = html.replace(matches[i], '');
@@ -38,10 +42,14 @@ app.get('/prerender', function (req, res) {
 
         res.send(html);
     });
+}
+
+app.get('/*', function(req, res) {
+    req.path !== '/' ? fetch(req.path.substring(1, req.path.length), req, res) : res.sendStatus(404);
 });
 
 var server = app.listen(port, function () {
     var host = server.address().address;
     var port = server.address().port;
-    console.log('Slimerjs-prerender listening at http://%s:%s', host, port);
+    console.log('SlimerJS-prerender listening at http://%s:%s', host, port);
 });
