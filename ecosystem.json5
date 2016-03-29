@@ -43,7 +43,7 @@
     production : {
       user : "node",
       host : "localhost",
-      ref  : "origin/pm2",
+      ref  : "origin/master",
       repo : "https://github.com/phra/slimerjs-prerender.git",
       path : "/home/node/deploy/production/prerender",
       "post-deploy" : "npm install --production && pm2 startOrGracefulReload ecosystem.json5 --env production"
@@ -51,7 +51,7 @@
     staging : {
       user : "node",
       host : "localhost",
-      ref  : "origin/pm2",
+      ref  : "origin/master",
       repo : "https://github.com/phra/slimerjs-prerender.git",
       path : "/home/node/deploy/staging/prerender",
       "post-deploy" : "npm install && pm2 startOrGracefulReload ecosystem.json5 --env staging",
